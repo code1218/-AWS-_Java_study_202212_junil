@@ -9,6 +9,7 @@ public class J12_UserMain {
 		service.stop();
 		
 		System.out.println("코드 수정하였습니다.");
+		System.out.println("코드 수정하였습니다.");
 	}
 	
 }
