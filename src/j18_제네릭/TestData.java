@@ -1,7 +1,6 @@
 package j18_제네릭;
 
 public class TestData<T, E> {
-	
 	private T data1;
 	private E data2; // Wrapper Class(래퍼 클래스)
 	
