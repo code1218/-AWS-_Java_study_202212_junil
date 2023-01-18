@@ -1,23 +1,34 @@
 package usermanagement.frame;
 
-import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 import java.awt.CardLayout;
 import java.awt.Color;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import java.awt.EventQueue;
 import java.awt.Font;
-import javax.swing.JTextField;
-import javax.swing.JPasswordField;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+
+import com.google.gson.JsonObject;
+
+import usermanagement.service.UserService;
 
 public class UserManagementFrame extends JFrame {
-
+	
+	private List<JTextField> loginFields;
+	private List<JTextField> registerFields;
+	
 	private CardLayout mainCard;
 	private JPanel mainPanel;
 	private JTextField usernameField;
@@ -41,6 +52,9 @@ public class UserManagementFrame extends JFrame {
 	}
 
 	public UserManagementFrame() {
+		loginFields = new ArrayList<>();
+		registerFields = new ArrayList<>();
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 400, 500);
 		mainPanel = new JPanel();
@@ -94,6 +108,14 @@ public class UserManagementFrame extends JFrame {
 		loginPanel.add(passwordLabel);
 		
 		JButton loginButton = new JButton("Login");
+		
+		loginButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				
+			}
+		});
+		
 		loginButton.setForeground(new Color(0, 0, 0));
 		loginButton.setFont(new Font("Gadugi", Font.BOLD, 15));
 		loginButton.setBackground(new Color(255, 255, 255));
@@ -110,6 +132,7 @@ public class UserManagementFrame extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				mainCard.show(mainPanel, "registerPanel");
+				clearFields(loginFields);
 			}
 		});
 		signupLink.setForeground(new Color(0, 102, 204));
@@ -133,6 +156,7 @@ public class UserManagementFrame extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				mainCard.show(mainPanel, "loginPanel");
+				clearFields(registerFields);
 			}
 		});
 		signinLink.setForeground(new Color(0, 102, 153));
@@ -200,10 +224,63 @@ public class UserManagementFrame extends JFrame {
 		registerPanel.add(registerEmailField);
 		
 		JButton registerButton = new JButton("Register");
+		
+		registerButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JsonObject userJson = new JsonObject();
+				userJson.addProperty("username", registerUsernameField.getText());
+				userJson.addProperty("password", registerPasswordField.getText());
+				userJson.addProperty("name", registerNameField.getText());
+				userJson.addProperty("email", registerEmailField.getText());
+				
+				UserService userService = UserService.getInstance();
+				
+				Map<String, String> response = userService.register(userJson.toString());
+				
+				if(response.containsKey("error")) {
+					JOptionPane.showMessageDialog(null, response.get("error"), "error", JOptionPane.ERROR_MESSAGE);					
+					return;
+				}
+				
+				JOptionPane.showMessageDialog(null, response.get("ok"), "ok", JOptionPane.INFORMATION_MESSAGE);
+				mainCard.show(mainPanel, "loginPanel");
+				clearFields(registerFields);
+			}
+		});
+		
 		registerButton.setForeground(Color.BLACK);
 		registerButton.setFont(new Font("Gadugi", Font.BOLD, 15));
 		registerButton.setBackground(Color.WHITE);
 		registerButton.setBounds(36, 353, 311, 36);
 		registerPanel.add(registerButton);
+		
+		loginFields.add(usernameField);
+		loginFields.add(passwordField);
+		
+		registerFields.add(registerUsernameField);
+		registerFields.add(registerPasswordField);
+		registerFields.add(registerNameField);
+		registerFields.add(registerEmailField);
+	}
+	
+	private void clearFields(List<JTextField> textFields) {
+		for(JTextField field : textFields) {
+			if(field.getText().isEmpty()) {
+				continue;
+			}
+			field.setText("");
+		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
