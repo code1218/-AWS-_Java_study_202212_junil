@@ -19,7 +19,6 @@ public class UserInsert {
 		pool = DBConnectionMgr.getInstance();
 	}
 	
-	
 	public int saveUser(User user) {
 		int successCount = 0;
 		
