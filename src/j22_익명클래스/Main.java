@@ -16,9 +16,25 @@ public class Main {
 				return x - y;
 			}
 		};
+		
+		Calculator c3 = (x, y) -> x * y;
+		
+		
+		
 		System.out.println(c2.calc(200, 100));
+		
+		
+		
+		
+		System.out.println(c3.calc(20, 3));
 		
 		
 	}
 	
 }
+
+
+
+
+
+

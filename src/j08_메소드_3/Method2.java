@@ -1,4 +1,4 @@
-package j08_메소드;
+package j08_메소드_3;
 
 public class Method2 {
 
