@@ -63,6 +63,7 @@ public class ChattingClient extends JFrame {
 		contentPane.setLayout(null);
 		
 		ipInput = new JTextField();
+		ipInput.setText("127.0.0.1");
 		ipInput.setBounds(429, 10, 116, 34);
 		contentPane.add(ipInput);
 		ipInput.setColumns(10);
@@ -104,7 +105,21 @@ public class ChattingClient extends JFrame {
 							
 							while(true) {
 								String message = reader.readLine();
-								contentView.append("\n" + message);
+								if(message.startsWith("@welcome")) {
+									int tokenIndex = message.indexOf("/");
+									message = message.substring(tokenIndex + 1);
+								}else if(message.startsWith("@userList")) {
+									System.out.println(message);
+									int tokenIndex = message.indexOf("/");
+									message = message.substring(tokenIndex + 1);
+									String[] usernames = message.split(",");
+									userListModel.clear();
+									for(String username : usernames) {
+										userListModel.addElement(username);
+									}
+									continue;
+								}
+								contentView.append(message + "\n");
 							}
 							
 						} catch (IOException e1) {
@@ -132,6 +147,7 @@ public class ChattingClient extends JFrame {
 		contentPane.add(connectButton);
 		
 		portInput = new JTextField();
+		portInput.setText("9090");
 		portInput.setBounds(549, 10, 51, 34);
 		contentPane.add(portInput);
 		portInput.setColumns(10);
@@ -166,6 +182,7 @@ public class ChattingClient extends JFrame {
 							PrintWriter out = new PrintWriter(outputStream, true);
 							
 							out.println(username + ": " + messageInput.getText());
+							messageInput.setText("");
 							
 						} catch (IOException e1) {
 							e1.printStackTrace();
@@ -186,6 +203,7 @@ public class ChattingClient extends JFrame {
 						PrintWriter out = new PrintWriter(outputStream, true);
 						
 						out.println(username + ": " + messageInput.getText());
+						messageInput.setText("");
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
