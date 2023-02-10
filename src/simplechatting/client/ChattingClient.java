@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -23,6 +24,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class ChattingClient extends JFrame {
 	
@@ -33,6 +36,9 @@ public class ChattingClient extends JFrame {
 	private JTextField ipInput;
 	private JTextField portInput;
 	private JTextArea contentView;
+	private JTextField messageInput;
+	private JList userList;
+	private DefaultListModel<String> userListModel;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -88,11 +94,25 @@ public class ChattingClient extends JFrame {
 						OutputStream outputStream = socket.getOutputStream();
 						PrintWriter out = new PrintWriter(outputStream, true);
 						
-						out.println(username + "님이 접속하였습니다.");
-						
-						String welcomeMessage = in.readLine();
-						contentView.append(welcomeMessage);
+						out.println(username);
 					}
+					
+					Thread thread = new Thread(() -> {
+						try {
+							InputStream input = socket.getInputStream();
+							BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+							
+							while(true) {
+								String message = reader.readLine();
+								contentView.append("\n" + message);
+							}
+							
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					});
+					
+					thread.start();
 					
 				} catch (ConnectException e1) {
 					
@@ -127,18 +147,60 @@ public class ChattingClient extends JFrame {
 		userListScroll.setBounds(429, 54, 240, 373);
 		contentPane.add(userListScroll);
 		
-		JList userList = new JList();
+		userListModel = new DefaultListModel<>();
+		userList = new JList(userListModel);
 		userListScroll.setViewportView(userList);
 		
 		JScrollPane messageScroll = new JScrollPane();
 		messageScroll.setBounds(12, 436, 559, 42);
 		contentPane.add(messageScroll);
 		
-		JTextArea messageInput = new JTextArea();
+		messageInput = new JTextField();
+		messageInput.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+					if(!messageInput.getText().isBlank()) {
+						try {
+							OutputStream outputStream = socket.getOutputStream();
+							PrintWriter out = new PrintWriter(outputStream, true);
+							
+							out.println(username + ": " + messageInput.getText());
+							
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}
+			}
+		});
 		messageScroll.setViewportView(messageInput);
 		
 		JButton sendButton = new JButton("전송");
+		sendButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(!messageInput.getText().isBlank()) {
+					try {
+						OutputStream outputStream = socket.getOutputStream();
+						PrintWriter out = new PrintWriter(outputStream, true);
+						
+						out.println(username + ": " + messageInput.getText());
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+		});
 		sendButton.setBounds(572, 436, 97, 42);
 		contentPane.add(sendButton);
 	}
 }
+
+
+
+
+
+
+
+
