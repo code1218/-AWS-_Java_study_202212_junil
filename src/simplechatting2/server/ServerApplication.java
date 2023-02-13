@@ -19,6 +19,8 @@ import com.google.gson.Gson;
 import lombok.Data;
 import simplechatting2.dto.JoinReqDto;
 import simplechatting2.dto.JoinRespDto;
+import simplechatting2.dto.MessageReqDto;
+import simplechatting2.dto.MessageRespDto;
 import simplechatting2.dto.RequestDto;
 import simplechatting2.dto.ResponseDto;
 
@@ -52,8 +54,26 @@ class ConnectedSocket extends Thread {
 					case "join": 
 						JoinReqDto joinReqDto = gson.fromJson(requestDto.getBody(), JoinReqDto.class);
 						username = joinReqDto.getUsername();
-						JoinRespDto joinRespDto = new JoinRespDto(username + "님이 접속하였습니다.");
+						List<String> connectedUsers = new ArrayList<>();
+						
+						for(ConnectedSocket connectedSocket : socketList) {
+							connectedUsers.add(connectedSocket.getUsername());
+						}
+						
+						JoinRespDto joinRespDto = new JoinRespDto(username + "님이 접속하였습니다.", connectedUsers);
+			
 						sendToAll(requestDto.getResource(), "ok", gson.toJson(joinRespDto));
+						break;
+					case "sendMessage":
+						MessageReqDto messageReqDto = gson.fromJson(requestDto.getBody(), MessageReqDto.class);
+						
+						if(messageReqDto.getToUser().equalsIgnoreCase("all")) {
+							String message = messageReqDto.getFromUser() + "[전체]: " + messageReqDto.getMessageValue();
+							MessageRespDto messageRespDto = new MessageRespDto(message);
+							sendToAll(requestDto.getResource(), "ok", gson.toJson(messageRespDto));
+						}
+						
+						break;
 				}
 			}
 			

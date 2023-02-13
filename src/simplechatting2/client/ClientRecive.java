@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 
 import lombok.RequiredArgsConstructor;
 import simplechatting2.dto.JoinRespDto;
+import simplechatting2.dto.MessageRespDto;
 import simplechatting2.dto.ResponseDto;
 
 @RequiredArgsConstructor
@@ -31,10 +32,14 @@ public class ClientRecive extends Thread {
 				ResponseDto responseDto = gson.fromJson(request, ResponseDto.class);
 				switch(responseDto.getResource()) {
 					case "join":
-						if(responseDto.getStatus().equalsIgnoreCase("ok")) {
-							JoinRespDto joinRespDto = gson.fromJson(responseDto.getBody(), JoinRespDto.class);
-							ChattingClient.getInstance().getContentView().append(joinRespDto.getWelcomeMessage());
-						}
+						JoinRespDto joinRespDto = gson.fromJson(responseDto.getBody(), JoinRespDto.class);
+						ChattingClient.getInstance().getContentView().append(joinRespDto.getWelcomeMessage() + "\n");
+						ChattingClient.getInstance().getUserListModel().clear();
+						ChattingClient.getInstance().getUserListModel().addAll(joinRespDto.getConnectedUsers());
+						break;
+					case "sendMessage":
+						MessageRespDto messageRespDto = gson.fromJson(responseDto.getBody(), MessageRespDto.class);
+						ChattingClient.getInstance().getContentView().append(messageRespDto.getMessageValue() + "\n");
 				}
 			}
 		} catch (IOException e) {

@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 import lombok.Data;
 import lombok.Getter;
 import simplechatting2.dto.JoinReqDto;
+import simplechatting2.dto.MessageReqDto;
 import simplechatting2.dto.RequestDto;
 
 import javax.swing.JTextField;
@@ -171,7 +172,10 @@ public class ChattingClient extends JFrame {
 							OutputStream outputStream = socket.getOutputStream();
 							PrintWriter out = new PrintWriter(outputStream, true);
 							
-							out.println(username + ": " + messageInput.getText());
+							MessageReqDto messageReqDto = 
+									new MessageReqDto("all", username, messageInput.getText());
+							
+							sendRequest("sendMessage", gson.toJson(messageReqDto));
 							messageInput.setText("");
 							
 						} catch (IOException e1) {
@@ -192,7 +196,10 @@ public class ChattingClient extends JFrame {
 						OutputStream outputStream = socket.getOutputStream();
 						PrintWriter out = new PrintWriter(outputStream, true);
 						
-						out.println(username + ": " + messageInput.getText());
+						MessageReqDto messageReqDto = 
+								new MessageReqDto("all", username, messageInput.getText());
+						
+						sendRequest("sendMessage", gson.toJson(messageReqDto));
 						messageInput.setText("");
 					} catch (IOException e1) {
 						e1.printStackTrace();
@@ -202,6 +209,22 @@ public class ChattingClient extends JFrame {
 		});
 		sendButton.setBounds(572, 436, 97, 42);
 		contentPane.add(sendButton);
+		
+	}
+	
+	private void sendRequest(String resource, String body) {
+		OutputStream outputStream;
+		try {
+			outputStream = socket.getOutputStream();
+			PrintWriter out = new PrintWriter(outputStream, true);
+			
+			RequestDto requestDto = new RequestDto(resource, body);
+			
+			out.println(gson.toJson(requestDto));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 }
 
