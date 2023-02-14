@@ -56,7 +56,7 @@ public class ChattingClient extends JFrame {
 	private JTextField portInput;
 	private JTextArea contentView;
 	private JTextField messageInput;
-	private JList userList;
+	private JList<String> userList;
 	private DefaultListModel<String> userListModel;
 
 	public static void main(String[] args) {
@@ -106,6 +106,8 @@ public class ChattingClient extends JFrame {
 							socket.getInetAddress() + "서버 접속", 
 							"접속성공", 
 							JOptionPane.INFORMATION_MESSAGE);
+					connectButton.setEnabled(false);
+					connectButton.removeMouseListener(this);
 					
 					ClientRecive clientRecive = new ClientRecive(socket);
 					clientRecive.start();
@@ -148,6 +150,7 @@ public class ChattingClient extends JFrame {
 		contentPane.add(contentScroll);
 		
 		contentView = new JTextArea();
+		contentView.setEditable(false);
 		contentScroll.setViewportView(contentView);
 		
 		JScrollPane userListScroll = new JScrollPane();
@@ -155,8 +158,9 @@ public class ChattingClient extends JFrame {
 		contentPane.add(userListScroll);
 		
 		userListModel = new DefaultListModel<>();
-		userList = new JList(userListModel);
+		userList = new JList<String>(userListModel);
 		userListScroll.setViewportView(userList);
+		
 		
 		JScrollPane messageScroll = new JScrollPane();
 		messageScroll.setBounds(12, 436, 559, 42);
@@ -167,21 +171,7 @@ public class ChattingClient extends JFrame {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode() == KeyEvent.VK_ENTER) {
-					if(!messageInput.getText().isBlank()) {
-						try {
-							OutputStream outputStream = socket.getOutputStream();
-							PrintWriter out = new PrintWriter(outputStream, true);
-							
-							MessageReqDto messageReqDto = 
-									new MessageReqDto("all", username, messageInput.getText());
-							
-							sendRequest("sendMessage", gson.toJson(messageReqDto));
-							messageInput.setText("");
-							
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-					}
+					sendMessage();
 				}
 			}
 		});
@@ -191,20 +181,7 @@ public class ChattingClient extends JFrame {
 		sendButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if(!messageInput.getText().isBlank()) {
-					try {
-						OutputStream outputStream = socket.getOutputStream();
-						PrintWriter out = new PrintWriter(outputStream, true);
-						
-						MessageReqDto messageReqDto = 
-								new MessageReqDto("all", username, messageInput.getText());
-						
-						sendRequest("sendMessage", gson.toJson(messageReqDto));
-						messageInput.setText("");
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-				}
+				sendMessage();
 			}
 		});
 		sendButton.setBounds(572, 436, 97, 42);
@@ -224,7 +201,19 @@ public class ChattingClient extends JFrame {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+	}
+	
+	private void sendMessage() {
+		if(!messageInput.getText().isBlank()) {
+			
+			String toUser = userList.getSelectedIndex() == 0 ? "all" : userList.getSelectedValue();
+			
+			MessageReqDto messageReqDto = 
+					new MessageReqDto(toUser, username, messageInput.getText());
+			
+			sendRequest("sendMessage", gson.toJson(messageReqDto));
+			messageInput.setText("");
+		}
 	}
 }
 
